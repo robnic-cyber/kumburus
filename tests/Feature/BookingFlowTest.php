@@ -40,6 +40,11 @@ class BookingFlowTest extends TestCase
             'total_amount' => 600.00,
         ]);
         Mail::assertSent(BookingConfirmedMail::class, fn (BookingConfirmedMail $mail) => $mail->booking->id === $booking->id);
+
+        $showResponse = $this->actingAs($user)->get(route('bookings.show', $booking));
+
+        $showResponse->assertOk();
+        $showResponse->assertSee($booking->confirmation_code);
     }
 
     public function test_overlapping_booking_is_rejected(): void
