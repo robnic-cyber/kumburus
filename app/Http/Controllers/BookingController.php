@@ -100,6 +100,87 @@ class BookingController extends Controller
         return view('bookings.show', compact('booking'));
     }
 
+    public function edit(Request $request, Booking $booking): View
+    {
+        $this->ensureGuestCanEdit($request, $booking);
+        $booking->load(['user', 'room.hotel']);
+
+        $rooms = Room::with('hotel')
+            ->where(function ($query) use ($booking): void {
+                $query->where('id', $booking->room_id)
+                    ->orWhere(function ($query): void {
+                        $query->where('is_active', true)
+                            ->whereHas('hotel', fn ($hotelQuery) => $hotelQuery->where('is_active', true));
+                    });
+            })
+            ->orderBy('hotel_id')
+            ->orderBy('name')
+            ->get();
+
+        return view('bookings.edit', compact('booking', 'rooms'));
+    }
+
+    public function update(Request $request, Booking $booking): RedirectResponse
+    {
+        $this->ensureGuestCanEdit($request, $booking);
+
+        $data = $request->validate([
+            'room_id' => ['required', 'integer', 'exists:rooms,id'],
+            'check_in' => ['required', 'date', 'after_or_equal:today'],
+            'check_out' => ['required', 'date', 'after:check_in'],
+            'guests' => ['required', 'integer', 'min:1', 'max:20'],
+            'special_requests' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        DB::transaction(function () use ($data, $booking, $request): void {
+            $lockedBooking = Booking::query()->lockForUpdate()->findOrFail($booking->id);
+            $room = Room::query()->with('hotel')->lockForUpdate()->findOrFail($data['room_id']);
+
+            if ($lockedBooking->user_id !== $request->user()->id) {
+                abort(403);
+            }
+
+            if ($data['room_id'] !== $lockedBooking->room_id && (! $room->is_active || ! $room->hotel->is_active)) {
+                throw ValidationException::withMessages(['room_id' => 'This room is no longer available.']);
+            }
+
+            if ($data['guests'] > $room->capacity) {
+                throw ValidationException::withMessages([
+                    'guests' => "This room accommodates up to {$room->capacity} guests.",
+                ]);
+            }
+
+            $overlap = Booking::query()
+                ->where('id', '!=', $lockedBooking->id)
+                ->where('room_id', $room->id)
+                ->whereIn('status', ['pending', 'confirmed'])
+                ->where('check_in', '<', $data['check_out'])
+                ->where('check_out', '>', $data['check_in'])
+                ->exists();
+
+            if ($overlap) {
+                throw ValidationException::withMessages([
+                    'check_in' => 'This room is already booked for some or all of those dates.',
+                ]);
+            }
+
+            $nights = Carbon::parse($data['check_in'])->diffInDays(Carbon::parse($data['check_out']));
+
+            $lockedBooking->update([
+                'room_id' => $room->id,
+                'check_in' => $data['check_in'],
+                'check_out' => $data['check_out'],
+                'guests' => $data['guests'],
+                'total_amount' => $nights * (float) $room->price_per_night,
+                'special_requests' => $data['special_requests'] ?? null,
+            ]);
+        });
+
+        return redirect()
+            ->route('bookings.show', $booking)
+            ->with('success', 'Your booking was updated successfully.');
+    }
+
     public function cancel(Request $request, Booking $booking): RedirectResponse
     {
         abort_unless($booking->user_id === $request->user()->id || $request->user()->is_admin, 403);
@@ -109,5 +190,11 @@ class BookingController extends Controller
         }
 
         return back()->with('success', 'Booking status updated.');
+    }
+
+    private function ensureGuestCanEdit(Request $request, Booking $booking): void
+    {
+        abort_unless($booking->user_id === $request->user()->id, 403);
+        abort_unless($booking->status !== 'cancelled' && $booking->check_in->isFuture(), 403);
     }
 }

@@ -33,12 +33,17 @@
             </div>
         @endif
 
-        @if($booking->status === 'confirmed' && $booking->check_in->isFuture())
-            <form method="POST" action="{{ route('bookings.cancel', $booking) }}" class="cancel-form">
-                @csrf
-                @method('PATCH')
-                <button class="link-button danger" type="submit">Cancel this booking</button>
-            </form>
+        @if($booking->status !== 'cancelled' && $booking->check_in->isFuture())
+            <div class="booking-actions">
+                <a class="button button-outline" href="{{ route('bookings.edit', $booking) }}">Edit this booking</a>
+                @if($booking->status === 'confirmed')
+                    <form method="POST" action="{{ route('bookings.cancel', $booking) }}" class="cancel-form">
+                        @csrf
+                        @method('PATCH')
+                        <button class="link-button danger" type="submit">Cancel this booking</button>
+                    </form>
+                @endif
+            </div>
         @endif
     </div>
 
