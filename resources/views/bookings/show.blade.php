@@ -33,7 +33,7 @@
             </div>
         @endif
 
-        @if($booking->status !== 'cancelled' && $booking->check_in->isFuture())
+        @if(!auth()->user()->is_admin && $booking->status !== 'cancelled' && $booking->check_in->isFuture())
             <div class="booking-actions">
                 <a class="button button-outline" href="{{ route('bookings.edit', $booking) }}">Edit this booking</a>
                 @if($booking->status === 'confirmed')
