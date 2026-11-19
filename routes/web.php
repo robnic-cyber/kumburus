@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AdminBookingController;
+use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\AdminHotelController;
 use App\Http\Controllers\AdminRoomController;
 use App\Http\Controllers\AuthController;
@@ -28,6 +30,11 @@ Route::middleware('auth')->group(function (): void {
 });
 
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function (): void {
+    Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{booking}/edit', [AdminBookingController::class, 'edit'])->name('bookings.edit');
+    Route::put('/bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
+
     Route::get('/hotels', [AdminHotelController::class, 'index'])->name('hotels.index');
     Route::get('/hotels/create', [AdminHotelController::class, 'create'])->name('hotels.create');
     Route::post('/hotels', [AdminHotelController::class, 'store'])->name('hotels.store');

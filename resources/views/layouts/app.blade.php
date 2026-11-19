@@ -17,9 +17,9 @@
                 <a href="{{ route('home') }}">Find a stay</a>
                 @auth
                     <a href="{{ route('bookings.index') }}">My bookings</a>
-                    @if(auth()->user()->is_admin)
-                        <a href="{{ route('admin.hotels.index') }}">Admin</a>
-                    @endif
+     @if(auth()->user()->is_admin)
+       <a href="{{ route('admin.dashboard') }}">Admin dashboard</a>
+     @endif
                     <span class="nav-user">Hi, {{ auth()->user()->name }}</span>
                     <form method="POST" action="{{ route('logout') }}" class="inline-form">
                         @csrf
