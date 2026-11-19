@@ -7,7 +7,7 @@
 
 <section class="container section-space"><div class="section-heading"><div><p class="eyebrow">CHOOSE YOUR ROOM</p><h2>Make it yours</h2></div><span class="muted">Prices shown per night</span></div><div class="room-list">
     @forelse($hotel->rooms as $room)
-        <article class="room-card"><div class="room-number">{{ $room->room_number }}</div><div class="room-info"><h3>{{ $room->name }}</h3><p>{{ $room->description }}</p><div class="tag-list">@foreach($room->amenities ?? [] as $amenity)<span>{{ $amenity }}</span>@endforeach</div></div><div class="room-action"><strong>${{ number_format((float) $room->price_per_night, 0) }}</strong><small>per night · up to {{ $room->capacity }} guests</small>@auth<a class="button button-small" href="{{ route('bookings.create', $room) }}">Book this room</a>@else<a class="button button-small" href="{{ route('login') }}">Sign in to book</a>@endauth</div></article>
+        <article class="room-card"><div class="room-number">{{ $room->room_number }}</div><div class="room-info"><h3>{{ $room->name }}</h3><p>{{ $room->description }}</p><div class="tag-list">@foreach($room->amenities ?? [] as $amenity)<span>{{ $amenity }}</span>@endforeach</div></div><div class="room-action"><strong>₱{{ number_format((float) $room->price_per_night, 0) }}</strong><small>per night · up to {{ $room->capacity }} guests</small>@auth<a class="button button-small" href="{{ route('bookings.create', $room) }}">Book this room</a>@else<a class="button button-small" href="{{ route('login') }}">Sign in to book</a>@endauth</div></article>
     @empty
         <div class="empty-state"><h3>No rooms are currently available.</h3></div>
     @endforelse

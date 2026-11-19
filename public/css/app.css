@@ -20,3 +20,25 @@
 .status-pending{background:#faedc7;color:#8a6416}
 .status-cancelled{background:#f6dfd2;color:#8d4930}
 .promise-list p{color:#c6d5c7}
+body{background:#fbfcf7}
+.site-header{background:rgba(251,252,247,.94);backdrop-filter:blur(12px)}
+.brand-mark{background:linear-gradient(145deg,#d8a63c,#b4811f);box-shadow:0 8px 18px rgba(180,129,31,.2)}
+.button{border-radius:999px;box-shadow:0 10px 20px rgba(180,129,31,.14)}
+.button:hover{box-shadow:0 14px 24px rgba(180,129,31,.2)}
+.button-outline{box-shadow:none}
+.search-bar{border:1px solid var(--line);border-radius:999px}
+.hotel-card,.auth-card,.confirmation-card,.booking-summary,.admin-form,.admin-hotel,.booking-row{border-radius:18px;overflow:hidden}
+.hotel-card{box-shadow:0 10px 28px rgba(24,63,53,.04)}
+.hotel-card:hover{box-shadow:0 20px 40px rgba(24,63,53,.12)}
+.hotel-image{border-radius:17px 17px 0 0}
+.hero{background:linear-gradient(135deg,#f3f6ec 0%,#edf4e8 55%,#f8f0d9 100%)}
+.hero-circle{background:linear-gradient(145deg,#dbe9d3,#d5a43c 92%);border:10px solid rgba(255,253,247,.55)}
+.hero-card{border:1px solid rgba(216,226,216,.9);border-radius:16px}
+.tag-list span{background:#fbf4df;border-color:#ead7a3;color:#7a641f}
+.room-card{border-radius:16px;padding:26px 22px;background:#fffdf7}
+.room-card:hover{box-shadow:0 14px 32px rgba(24,63,53,.08);border-color:#d3b56c}
+.status{border:1px solid rgba(24,63,53,.08)}
+.confirmation-mark{border:8px solid #eef5e9}
+.flash{border-radius:12px}
+.promise-band{background:linear-gradient(135deg,#183f35,#245646)}
+@media(max-width:800px){.search-bar{border-radius:18px}.room-card{padding:20px 16px}}
