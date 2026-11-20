@@ -34,4 +34,17 @@ class Hotel extends Model
     {
         return $this->hasMany(Room::class);
     }
+
+    public function getImageUrlAttribute(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
+            return $value;
+        }
+
+        return url('storage/'.$value);
+    }
 }

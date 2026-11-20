@@ -58,8 +58,15 @@ class AdminHotelController extends Controller
             'country' => ['required', 'string', 'max:100'],
             'star_rating' => ['required', 'integer', 'between:1,5'],
             'image_url' => ['nullable', 'url', 'max:500'],
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'is_active' => ['nullable', 'boolean'],
         ]);
+
+        if ($request->hasFile('image')) {
+            $data['image_url'] = $request->file('image')->store('hotels', 'public');
+        }
+
+        unset($data['image']);
 
         $data['slug'] = Str::slug($data['name']).($hotel && $hotel->exists ? '-'.$hotel->id : '-'.Str::lower(Str::random(5)));
         $data['is_active'] = $request->boolean('is_active', true);
