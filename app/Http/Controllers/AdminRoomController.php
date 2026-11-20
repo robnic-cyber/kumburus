@@ -36,9 +36,14 @@ class AdminRoomController extends Controller
 
     public function destroy(Room $room): RedirectResponse
     {
-        $room->update(['is_active' => false]);
+        if ($room->bookings()->exists()) {
+            return back()->with('error', "{$room->name} cannot be deleted because it has booking records. Archive it instead.");
+        }
 
-        return back()->with('success', "{$room->name} was archived.");
+        $roomName = $room->name;
+        $room->delete();
+
+        return back()->with('success', "{$roomName} was deleted.");
     }
 
     private function validated(Request $request): array

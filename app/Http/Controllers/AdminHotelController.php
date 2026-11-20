@@ -12,7 +12,7 @@ class AdminHotelController extends Controller
 {
     public function index(): View
     {
-        $hotels = Hotel::withCount('rooms')->latest()->get();
+        $hotels = Hotel::with('rooms')->withCount('rooms')->latest()->get();
 
         return view('admin.hotels.index', compact('hotels'));
     }
