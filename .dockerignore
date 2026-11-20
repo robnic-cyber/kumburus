@@ -1,0 +1,17 @@
+.git
+.github
+.openai
+.env
+.env.*
+!.env.example
+database/database.sqlite
+node_modules
+vendor
+storage/logs
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+storage/app
+public/hot
+public/storage
+public/build

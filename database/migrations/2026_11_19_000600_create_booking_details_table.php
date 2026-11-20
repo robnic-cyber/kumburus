@@ -9,6 +9,33 @@ return new class extends Migration
     {
         DB::statement('DROP VIEW IF EXISTS booking_details');
 
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement(<<<'SQL'
+                CREATE VIEW booking_details AS
+                SELECT
+                    b.id AS booking_id,
+                    b.confirmation_code,
+                    u.name AS guest_name,
+                    u.email AS guest_email,
+                    h.name AS hotel_name,
+                    r.name AS room_name,
+                    b.check_in,
+                    b.check_out,
+                    b.guests,
+                    b.total_amount,
+                    b.status,
+                    b.special_requests,
+                    b.created_at,
+                    b.updated_at
+                FROM bookings b
+                JOIN users u ON u.id = b.user_id
+                JOIN rooms r ON r.id = b.room_id
+                JOIN hotels h ON h.id = r.hotel_id
+            SQL);
+
+            return;
+        }
+
         DB::statement(<<<'SQL'
             CREATE TABLE booking_details (
                 booking_id INTEGER PRIMARY KEY,
@@ -229,6 +256,12 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'pgsql') {
+            DB::statement('DROP VIEW IF EXISTS booking_details');
+
+            return;
+        }
+
         DB::statement('DROP TRIGGER IF EXISTS booking_details_after_hotel_update');
         DB::statement('DROP TRIGGER IF EXISTS booking_details_after_room_update');
         DB::statement('DROP TRIGGER IF EXISTS booking_details_after_user_update');
