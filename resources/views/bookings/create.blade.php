@@ -17,6 +17,14 @@
                 <label>Check out<input type="date" name="check_out" value="{{ old('check_out', now()->addDays(2)->format('Y-m-d')) }}" min="{{ now()->addDay()->format('Y-m-d') }}" required></label>
             </div>
             <label>Guests<input type="number" name="guests" value="{{ old('guests', 1) }}" min="1" max="{{ $room->capacity }}" required><small>Up to {{ $room->capacity }} guests for this room.</small></label>
+            <label>Payment method
+                <select name="payment_method" required>
+                    @foreach(\App\Models\Booking::paymentMethods() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('payment_method', 'pay_at_hotel') === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+                <small>Your selected payment method is saved with the booking. No payment is charged yet.</small>
+            </label>
             <label>Special requests <span class="muted">(optional)</span><textarea name="special_requests" rows="4" placeholder="Anything that would make your stay more comfortable?">{{ old('special_requests') }}</textarea></label>
             <button class="button button-full" type="submit">Confirm booking <span>→</span></button>
         </form>

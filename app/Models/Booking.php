@@ -18,6 +18,7 @@ class Booking extends Model
         'check_out',
         'guests',
         'total_amount',
+        'payment_method',
         'status',
         'special_requests',
         'email_sent_at',
@@ -31,6 +32,21 @@ class Booking extends Model
             'total_amount' => 'decimal:2',
             'email_sent_at' => 'datetime',
         ];
+    }
+
+    public static function paymentMethods(): array
+    {
+        return [
+            'pay_at_hotel' => 'Pay at hotel',
+            'gcash' => 'GCash',
+            'card' => 'Credit or debit card',
+            'bank_transfer' => 'Bank transfer',
+        ];
+    }
+
+    public function getPaymentMethodLabelAttribute(): string
+    {
+        return self::paymentMethods()[$this->payment_method] ?? ucfirst(str_replace('_', ' ', (string) $this->payment_method));
     }
 
     public function user(): BelongsTo

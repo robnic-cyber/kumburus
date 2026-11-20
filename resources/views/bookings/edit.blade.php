@@ -40,6 +40,13 @@
             </div>
 
             <label>Guests<input type="number" name="guests" value="{{ old('guests', $booking->guests) }}" min="1" max="20" required><small>The room capacity is checked when you save.</small></label>
+            <label>Payment method
+                <select name="payment_method" required>
+                    @foreach(\App\Models\Booking::paymentMethods() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('payment_method', $booking->payment_method) === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
             <label>Special requests <span class="muted">(optional)</span><textarea name="special_requests" rows="4" placeholder="Anything that would make your stay more comfortable?">{{ old('special_requests', $booking->special_requests) }}</textarea></label>
 
             <div class="edit-form-actions">

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Throwable;
@@ -39,6 +40,7 @@ class BookingController extends Controller
             'check_in' => ['required', 'date', 'after_or_equal:today'],
             'check_out' => ['required', 'date', 'after:check_in'],
             'guests' => ['required', 'integer', 'min:1', 'max:20'],
+            'payment_method' => ['required', Rule::in(array_keys(Booking::paymentMethods()))],
             'special_requests' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -72,6 +74,7 @@ class BookingController extends Controller
                 'check_out' => $data['check_out'],
                 'guests' => $data['guests'],
                 'total_amount' => $nights * (float) $room->price_per_night,
+                'payment_method' => $data['payment_method'],
                 'status' => 'confirmed',
                 'special_requests' => $data['special_requests'] ?? null,
             ]);
@@ -129,6 +132,7 @@ class BookingController extends Controller
             'check_in' => ['required', 'date', 'after_or_equal:today'],
             'check_out' => ['required', 'date', 'after:check_in'],
             'guests' => ['required', 'integer', 'min:1', 'max:20'],
+            'payment_method' => ['sometimes', 'required', Rule::in(array_keys(Booking::paymentMethods()))],
             'special_requests' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -172,6 +176,7 @@ class BookingController extends Controller
                 'check_out' => $data['check_out'],
                 'guests' => $data['guests'],
                 'total_amount' => $nights * (float) $room->price_per_night,
+                'payment_method' => $data['payment_method'] ?? $lockedBooking->payment_method,
                 'special_requests' => $data['special_requests'] ?? null,
             ]);
         });

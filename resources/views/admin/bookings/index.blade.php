@@ -47,7 +47,7 @@
                             <span>to {{ $booking->check_out->format('M d, Y') }}</span>
                         </div>
                         <span class="status-badge status-{{ $booking->status }}">{{ ucfirst($booking->status) }}</span>
-                        <strong>₱{{ number_format((float) $booking->total_amount, 0) }}</strong>
+                        <div><strong>₱{{ number_format((float) $booking->total_amount, 0) }}</strong><span>{{ $booking->payment_method_label }}</span></div>
                         <a class="text-link" href="{{ route('admin.bookings.edit', $booking) }}">Edit</a>
                     </div>
                 @endforeach

@@ -46,6 +46,7 @@ class AdminBookingController extends Controller
             'check_in' => ['required', 'date'],
             'check_out' => ['required', 'date', 'after:check_in'],
             'guests' => ['required', 'integer', 'min:1', 'max:20'],
+            'payment_method' => ['sometimes', 'required', Rule::in(array_keys(Booking::paymentMethods()))],
             'status' => ['required', Rule::in(['pending', 'confirmed', 'cancelled'])],
             'special_requests' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -84,6 +85,7 @@ class AdminBookingController extends Controller
                 'check_out' => $data['check_out'],
                 'guests' => $data['guests'],
                 'total_amount' => $nights * $room->price_per_night,
+                'payment_method' => $data['payment_method'] ?? $lockedBooking->payment_method,
                 'status' => $data['status'],
                 'special_requests' => $data['special_requests'] ?? null,
             ]);

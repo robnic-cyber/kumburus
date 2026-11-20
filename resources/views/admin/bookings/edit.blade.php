@@ -73,6 +73,15 @@
                 </select>
             </label>
 
+            <label class="form-field">
+                <span>Payment method</span>
+                <select name="payment_method">
+                    @foreach(\App\Models\Booking::paymentMethods() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('payment_method', $booking->payment_method) === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
+
             <label class="form-field form-field-wide">
                 <span>Special requests</span>
                 <textarea name="special_requests" rows="5" placeholder="Add an arrival note, accessibility need, or other request">{{ old('special_requests', $booking->special_requests) }}</textarea>

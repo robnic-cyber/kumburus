@@ -23,6 +23,7 @@
             <div><span>Check in</span><strong>{{ $booking->check_in->format('D, M d, Y') }}</strong></div>
             <div><span>Check out</span><strong>{{ $booking->check_out->format('D, M d, Y') }}</strong></div>
             <div><span>Guests</span><strong>{{ $booking->guests }}</strong></div>
+            <div><span>Payment method</span><strong>{{ $booking->payment_method_label }}</strong></div>
             <div><span>Total</span><strong>₱{{ number_format((float) $booking->total_amount, 2) }}</strong></div>
         </div>
 
