@@ -30,7 +30,7 @@ class BookingFlowTest extends TestCase
             'guests' => 2,
             'payment_method' => 'ewallet',
             'payment_provider' => 'gcash',
-            'payment_amount' => 600,
+            'payment_amount' => 1,
         ]);
 
         $booking = Booking::first();
@@ -51,6 +51,34 @@ class BookingFlowTest extends TestCase
 
         $showResponse->assertOk();
         $showResponse->assertSee($booking->confirmation_code);
+    }
+
+    public function test_bank_transfer_saves_the_selected_bank_and_booking_total(): void
+    {
+        Mail::fake();
+        $user = User::factory()->create();
+        $room = $this->room();
+
+        $response = $this->actingAs($user)->post(route('bookings.store'), [
+            'room_id' => $room->id,
+            'check_in' => now()->addDays(5)->toDateString(),
+            'check_out' => now()->addDays(7)->toDateString(),
+            'guests' => 2,
+            'payment_method' => 'bank_transfer',
+            'payment_provider' => 'bdo',
+            'payment_amount' => 1,
+        ]);
+
+        $booking = Booking::first();
+
+        $response->assertRedirect(route('bookings.show', $booking));
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'payment_method' => 'bank_transfer',
+            'payment_provider' => 'bdo',
+            'payment_amount' => 400,
+            'total_amount' => 400,
+        ]);
     }
 
     public function test_overlapping_booking_is_rejected(): void

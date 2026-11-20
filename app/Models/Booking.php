@@ -55,6 +55,25 @@ class Booking extends Model
         ];
     }
 
+    public static function bankProviders(): array
+    {
+        return [
+            'pnb' => 'PNB',
+            'chinabank' => 'China Bank',
+            'bdo' => 'BDO',
+            'bpi' => 'BPI',
+        ];
+    }
+
+    public static function paymentProvidersForMethod(?string $method): array
+    {
+        return match ($method) {
+            'ewallet' => self::paymentProviders(),
+            'bank_transfer' => self::bankProviders(),
+            default => [],
+        };
+    }
+
     public function getPaymentMethodLabelAttribute(): string
     {
         return self::paymentMethods()[$this->payment_method] ?? ucfirst(str_replace('_', ' ', (string) $this->payment_method));
@@ -63,7 +82,7 @@ class Booking extends Model
     public function getPaymentProviderLabelAttribute(): ?string
     {
         return $this->payment_provider
-            ? (self::paymentProviders()[$this->payment_provider] ?? ucfirst((string) $this->payment_provider))
+            ? (self::paymentProvidersForMethod($this->payment_method)[$this->payment_provider] ?? ucfirst((string) $this->payment_provider))
             : null;
     }
 

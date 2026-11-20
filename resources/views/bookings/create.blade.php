@@ -24,9 +24,9 @@
                     @endforeach
                 </select>
             </label>
-            <div id="payment-provider-field" hidden>
+            <div id="ewallet-provider-field" hidden>
                 <label>E-wallet provider
-                    <select name="payment_provider" id="payment-provider">
+                    <select name="payment_provider" id="ewallet-provider" disabled>
                         <option value="">Choose an e-wallet</option>
                         @foreach(\App\Models\Booking::paymentProviders() as $value => $label)
                             <option value="{{ $value }}" @selected(old('payment_provider') === $value)>{{ $label }}</option>
@@ -34,9 +34,19 @@
                     </select>
                 </label>
             </div>
+            <div id="bank-provider-field" hidden>
+                <label>Bank
+                    <select name="payment_provider" id="bank-provider" disabled>
+                        <option value="">Choose a bank</option>
+                        @foreach(\App\Models\Booking::bankProviders() as $value => $label)
+                            <option value="{{ $value }}" @selected(old('payment_provider') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            </div>
             <label>Payment amount (₱)
-                <input type="number" name="payment_amount" id="payment-amount" value="{{ old('payment_amount') }}" min="0.01" step="0.01" required>
-                <small id="payment-total">Enter the amount you will pay. It cannot exceed the booking total.</small>
+                <input type="number" name="payment_amount" id="payment-amount" value="{{ old('payment_amount') }}" min="0.01" step="0.01" readonly required>
+                <small id="payment-total">The payment amount is automatically calculated from your booking total.</small>
             </label>
             <label>Special requests <span class="muted">(optional)</span><textarea name="special_requests" rows="4" placeholder="Anything that would make your stay more comfortable?">{{ old('special_requests') }}</textarea></label>
             <button class="button button-full" type="submit">Confirm booking <span>→</span></button>
@@ -55,8 +65,10 @@
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('.booking-form');
     const method = document.getElementById('payment-method');
-    const providerField = document.getElementById('payment-provider-field');
-    const provider = document.getElementById('payment-provider');
+    const ewalletField = document.getElementById('ewallet-provider-field');
+    const bankField = document.getElementById('bank-provider-field');
+    const ewalletProvider = document.getElementById('ewallet-provider');
+    const bankProvider = document.getElementById('bank-provider');
     const amount = document.getElementById('payment-amount');
     const totalMessage = document.getElementById('payment-total');
     const checkIn = form.querySelector('[name="check_in"]');
@@ -65,9 +77,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function refreshPaymentFields() {
         const isEwallet = method.value === 'ewallet';
-        providerField.hidden = !isEwallet;
-        provider.required = isEwallet;
-        if (!isEwallet) provider.value = '';
+        const isBankTransfer = method.value === 'bank_transfer';
+        ewalletField.hidden = !isEwallet;
+        bankField.hidden = !isBankTransfer;
+        ewalletProvider.disabled = !isEwallet;
+        bankProvider.disabled = !isBankTransfer;
+        ewalletProvider.required = isEwallet;
+        bankProvider.required = isBankTransfer;
+        if (!isEwallet) ewalletProvider.value = '';
+        if (!isBankTransfer) bankProvider.value = '';
 
         const start = new Date(checkIn.value + 'T00:00:00');
         const end = new Date(checkOut.value + 'T00:00:00');
@@ -75,15 +93,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (nights > 0) {
             const total = (nights * price).toFixed(2);
-            amount.max = total;
             totalMessage.textContent = 'Booking total: ₱' + Number(total).toLocaleString('en-PH', { minimumFractionDigits: 2 });
-            if (!amount.dataset.edited) amount.value = total;
+            amount.value = total;
         }
     }
 
-    if (amount.value) amount.dataset.edited = 'true';
     method.addEventListener('change', refreshPaymentFields);
-    amount.addEventListener('input', function () { amount.dataset.edited = 'true'; });
     checkIn.addEventListener('change', refreshPaymentFields);
     checkOut.addEventListener('change', refreshPaymentFields);
     refreshPaymentFields();

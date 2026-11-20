@@ -41,8 +41,7 @@ class BookingController extends Controller
             'check_out' => ['required', 'date', 'after:check_in'],
             'guests' => ['required', 'integer', 'min:1', 'max:20'],
             'payment_method' => ['required', Rule::in(array_keys(Booking::paymentMethods()))],
-            'payment_provider' => ['nullable', Rule::requiredIf(fn (): bool => $request->input('payment_method') === 'ewallet'), Rule::in(array_keys(Booking::paymentProviders()))],
-            'payment_amount' => ['required', 'numeric', 'min:0.01'],
+            'payment_provider' => ['nullable', Rule::requiredIf(fn (): bool => in_array($request->input('payment_method'), ['ewallet', 'bank_transfer'], true)), Rule::in(array_keys(Booking::paymentProvidersForMethod($request->input('payment_method'))))],
             'special_requests' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -69,10 +68,6 @@ class BookingController extends Controller
             $nights = Carbon::parse($data['check_in'])->diffInDays(Carbon::parse($data['check_out']));
             $totalAmount = $nights * (float) $room->price_per_night;
 
-            if ((float) $data['payment_amount'] > $totalAmount) {
-                throw ValidationException::withMessages(['payment_amount' => 'The payment amount cannot be higher than the booking total.']);
-            }
-
             return Booking::create([
                 'user_id' => $request->user()->id,
                 'room_id' => $room->id,
@@ -82,8 +77,8 @@ class BookingController extends Controller
                 'guests' => $data['guests'],
                 'total_amount' => $totalAmount,
                 'payment_method' => $data['payment_method'],
-                'payment_provider' => $data['payment_method'] === 'ewallet' ? $data['payment_provider'] : null,
-                'payment_amount' => $data['payment_amount'],
+                'payment_provider' => in_array($data['payment_method'], ['ewallet', 'bank_transfer'], true) ? $data['payment_provider'] : null,
+                'payment_amount' => $totalAmount,
                 'status' => 'confirmed',
                 'special_requests' => $data['special_requests'] ?? null,
             ]);
@@ -142,8 +137,7 @@ class BookingController extends Controller
             'check_out' => ['required', 'date', 'after:check_in'],
             'guests' => ['required', 'integer', 'min:1', 'max:20'],
             'payment_method' => ['sometimes', 'required', Rule::in(array_keys(Booking::paymentMethods()))],
-            'payment_provider' => ['nullable', Rule::requiredIf(fn (): bool => $request->input('payment_method', $booking->payment_method) === 'ewallet'), Rule::in(array_keys(Booking::paymentProviders()))],
-            'payment_amount' => ['sometimes', 'required', 'numeric', 'min:0.01'],
+            'payment_provider' => ['nullable', Rule::requiredIf(fn (): bool => in_array($request->input('payment_method', $booking->payment_method), ['ewallet', 'bank_transfer'], true)), Rule::in(array_keys(Booking::paymentProvidersForMethod($request->input('payment_method', $booking->payment_method))))],
             'special_requests' => ['nullable', 'string', 'max:2000'],
         ]);
 
@@ -181,12 +175,6 @@ class BookingController extends Controller
 
             $nights = Carbon::parse($data['check_in'])->diffInDays(Carbon::parse($data['check_out']));
             $totalAmount = $nights * (float) $room->price_per_night;
-            $paymentAmount = (float) ($data['payment_amount'] ?? $lockedBooking->payment_amount);
-
-            if ($paymentAmount > $totalAmount) {
-                throw ValidationException::withMessages(['payment_amount' => 'The payment amount cannot be higher than the booking total.']);
-            }
-
             $lockedBooking->update([
                 'room_id' => $room->id,
                 'check_in' => $data['check_in'],
@@ -194,8 +182,8 @@ class BookingController extends Controller
                 'guests' => $data['guests'],
                 'total_amount' => $totalAmount,
                 'payment_method' => $data['payment_method'] ?? $lockedBooking->payment_method,
-                'payment_provider' => ($data['payment_method'] ?? $lockedBooking->payment_method) === 'ewallet' ? ($data['payment_provider'] ?? $lockedBooking->payment_provider) : null,
-                'payment_amount' => $paymentAmount,
+                'payment_provider' => in_array($data['payment_method'] ?? $lockedBooking->payment_method, ['ewallet', 'bank_transfer'], true) ? ($data['payment_provider'] ?? $lockedBooking->payment_provider) : null,
+                'payment_amount' => $totalAmount,
                 'special_requests' => $data['special_requests'] ?? null,
             ]);
         });
