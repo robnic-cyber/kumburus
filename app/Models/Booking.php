@@ -19,6 +19,8 @@ class Booking extends Model
         'guests',
         'total_amount',
         'payment_method',
+        'payment_provider',
+        'payment_amount',
         'status',
         'special_requests',
         'email_sent_at',
@@ -30,6 +32,7 @@ class Booking extends Model
             'check_in' => 'date',
             'check_out' => 'date',
             'total_amount' => 'decimal:2',
+            'payment_amount' => 'decimal:2',
             'email_sent_at' => 'datetime',
         ];
     }
@@ -43,9 +46,25 @@ class Booking extends Model
         ];
     }
 
+    public static function paymentProviders(): array
+    {
+        return [
+            'gcash' => 'GCash',
+            'maya' => 'Maya',
+            'maribank' => 'MariBank',
+        ];
+    }
+
     public function getPaymentMethodLabelAttribute(): string
     {
         return self::paymentMethods()[$this->payment_method] ?? ucfirst(str_replace('_', ' ', (string) $this->payment_method));
+    }
+
+    public function getPaymentProviderLabelAttribute(): ?string
+    {
+        return $this->payment_provider
+            ? (self::paymentProviders()[$this->payment_provider] ?? ucfirst((string) $this->payment_provider))
+            : null;
     }
 
     public function user(): BelongsTo

@@ -41,11 +41,22 @@
 
             <label>Guests<input type="number" name="guests" value="{{ old('guests', $booking->guests) }}" min="1" max="20" required><small>The room capacity is checked when you save.</small></label>
             <label>Payment method
-                <select name="payment_method" required>
+                <select name="payment_method" id="payment-method" required>
                     @foreach(\App\Models\Booking::paymentMethods() as $value => $label)
                         <option value="{{ $value }}" @selected(old('payment_method', $booking->payment_method) === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
+            </label>
+            <label id="payment-provider-field">E-wallet provider
+                <select name="payment_provider" id="payment-provider">
+                    <option value="">Choose an e-wallet</option>
+                    @foreach(\App\Models\Booking::paymentProviders() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('payment_provider', $booking->payment_provider) === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
+            <label>Payment amount (₱)
+                <input type="number" name="payment_amount" value="{{ old('payment_amount', $booking->payment_amount) }}" min="0.01" step="0.01" required>
             </label>
             <label>Special requests <span class="muted">(optional)</span><textarea name="special_requests" rows="4" placeholder="Anything that would make your stay more comfortable?">{{ old('special_requests', $booking->special_requests) }}</textarea></label>
 
@@ -65,4 +76,21 @@
         <div class="tag-list"><span>{{ $booking->nights }} {{ Str::plural('night', $booking->nights) }}</span><span>{{ $booking->guests }} {{ Str::plural('guest', $booking->guests) }}</span></div>
     </aside>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const method = document.getElementById('payment-method');
+    const providerField = document.getElementById('payment-provider-field');
+    const provider = document.getElementById('payment-provider');
+
+    function refreshPaymentFields() {
+        const isEwallet = method.value === 'ewallet';
+        providerField.hidden = !isEwallet;
+        provider.required = isEwallet;
+        if (!isEwallet) provider.value = '';
+    }
+
+    method.addEventListener('change', refreshPaymentFields);
+    refreshPaymentFields();
+});
+</script>
 @endsection

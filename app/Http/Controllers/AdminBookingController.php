@@ -47,6 +47,8 @@ class AdminBookingController extends Controller
             'check_out' => ['required', 'date', 'after:check_in'],
             'guests' => ['required', 'integer', 'min:1', 'max:20'],
             'payment_method' => ['sometimes', 'required', Rule::in(array_keys(Booking::paymentMethods()))],
+            'payment_provider' => ['nullable', Rule::requiredIf(fn (): bool => $request->input('payment_method', $booking->payment_method) === 'ewallet'), Rule::in(array_keys(Booking::paymentProviders()))],
+            'payment_amount' => ['sometimes', 'required', 'numeric', 'min:0.01'],
             'status' => ['required', Rule::in(['pending', 'confirmed', 'cancelled'])],
             'special_requests' => ['nullable', 'string', 'max:2000'],
         ]);
@@ -78,14 +80,22 @@ class AdminBookingController extends Controller
             }
 
             $nights = Carbon::parse($data['check_in'])->diffInDays(Carbon::parse($data['check_out']));
+            $totalAmount = $nights * $room->price_per_night;
+            $paymentAmount = (float) ($data['payment_amount'] ?? $lockedBooking->payment_amount);
+
+            if ($paymentAmount > $totalAmount) {
+                throw ValidationException::withMessages(['payment_amount' => 'The payment amount cannot be higher than the booking total.']);
+            }
 
             $lockedBooking->update([
                 'room_id' => $room->id,
                 'check_in' => $data['check_in'],
                 'check_out' => $data['check_out'],
                 'guests' => $data['guests'],
-                'total_amount' => $nights * $room->price_per_night,
+                'total_amount' => $totalAmount,
                 'payment_method' => $data['payment_method'] ?? $lockedBooking->payment_method,
+                'payment_provider' => ($data['payment_method'] ?? $lockedBooking->payment_method) === 'ewallet' ? ($data['payment_provider'] ?? $lockedBooking->payment_provider) : null,
+                'payment_amount' => $paymentAmount,
                 'status' => $data['status'],
                 'special_requests' => $data['special_requests'] ?? null,
             ]);

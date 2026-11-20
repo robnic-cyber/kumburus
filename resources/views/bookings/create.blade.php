@@ -9,7 +9,7 @@
         <p class="eyebrow">RESERVE YOUR ROOM</p>
         <h1>Almost there.</h1>
         <p class="muted">Choose your dates and we’ll take care of the rest.</p>
-        <form method="POST" action="{{ route('bookings.store') }}" class="stack-form booking-form">
+        <form method="POST" action="{{ route('bookings.store') }}" class="stack-form booking-form" data-room-price="{{ $room->price_per_night }}">
             @csrf
             <input type="hidden" name="room_id" value="{{ $room->id }}">
             <div class="form-grid">
@@ -18,12 +18,25 @@
             </div>
             <label>Guests<input type="number" name="guests" value="{{ old('guests', 1) }}" min="1" max="{{ $room->capacity }}" required><small>Up to {{ $room->capacity }} guests for this room.</small></label>
             <label>Payment method
-                <select name="payment_method" required>
+                <select name="payment_method" id="payment-method" required>
                     @foreach(\App\Models\Booking::paymentMethods() as $value => $label)
                         <option value="{{ $value }}" @selected(old('payment_method', 'cash') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
-                <small>Your selected payment method is saved with the booking. No payment is charged yet.</small>
+            </label>
+            <div id="payment-provider-field" hidden>
+                <label>E-wallet provider
+                    <select name="payment_provider" id="payment-provider">
+                        <option value="">Choose an e-wallet</option>
+                        @foreach(\App\Models\Booking::paymentProviders() as $value => $label)
+                            <option value="{{ $value }}" @selected(old('payment_provider') === $value)>{{ $label }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            </div>
+            <label>Payment amount (₱)
+                <input type="number" name="payment_amount" id="payment-amount" value="{{ old('payment_amount') }}" min="0.01" step="0.01" required>
+                <small id="payment-total">Enter the amount you will pay. It cannot exceed the booking total.</small>
             </label>
             <label>Special requests <span class="muted">(optional)</span><textarea name="special_requests" rows="4" placeholder="Anything that would make your stay more comfortable?">{{ old('special_requests') }}</textarea></label>
             <button class="button button-full" type="submit">Confirm booking <span>→</span></button>
@@ -38,4 +51,42 @@
         <div class="tag-list">@foreach($room->amenities ?? [] as $amenity)<span>{{ $amenity }}</span>@endforeach</div>
     </aside>
 </section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('.booking-form');
+    const method = document.getElementById('payment-method');
+    const providerField = document.getElementById('payment-provider-field');
+    const provider = document.getElementById('payment-provider');
+    const amount = document.getElementById('payment-amount');
+    const totalMessage = document.getElementById('payment-total');
+    const checkIn = form.querySelector('[name="check_in"]');
+    const checkOut = form.querySelector('[name="check_out"]');
+    const price = Number(form.dataset.roomPrice);
+
+    function refreshPaymentFields() {
+        const isEwallet = method.value === 'ewallet';
+        providerField.hidden = !isEwallet;
+        provider.required = isEwallet;
+        if (!isEwallet) provider.value = '';
+
+        const start = new Date(checkIn.value + 'T00:00:00');
+        const end = new Date(checkOut.value + 'T00:00:00');
+        const nights = Math.round((end - start) / 86400000);
+
+        if (nights > 0) {
+            const total = (nights * price).toFixed(2);
+            amount.max = total;
+            totalMessage.textContent = 'Booking total: ₱' + Number(total).toLocaleString('en-PH', { minimumFractionDigits: 2 });
+            if (!amount.dataset.edited) amount.value = total;
+        }
+    }
+
+    if (amount.value) amount.dataset.edited = 'true';
+    method.addEventListener('change', refreshPaymentFields);
+    amount.addEventListener('input', function () { amount.dataset.edited = 'true'; });
+    checkIn.addEventListener('change', refreshPaymentFields);
+    checkOut.addEventListener('change', refreshPaymentFields);
+    refreshPaymentFields();
+});
+</script>
 @endsection

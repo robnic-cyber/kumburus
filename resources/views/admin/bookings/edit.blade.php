@@ -82,6 +82,21 @@
                 </select>
             </label>
 
+            <label class="form-field">
+                <span>E-wallet provider</span>
+                <select name="payment_provider">
+                    <option value="">Not applicable</option>
+                    @foreach(\App\Models\Booking::paymentProviders() as $value => $label)
+                        <option value="{{ $value }}" @selected(old('payment_provider', $booking->payment_provider) === $value)>{{ $label }}</option>
+                    @endforeach
+                </select>
+            </label>
+
+            <label class="form-field">
+                <span>Payment amount (₱)</span>
+                <input type="number" name="payment_amount" min="0.01" step="0.01" value="{{ old('payment_amount', $booking->payment_amount) }}" required>
+            </label>
+
             <label class="form-field form-field-wide">
                 <span>Special requests</span>
                 <textarea name="special_requests" rows="5" placeholder="Add an arrival note, accessibility need, or other request">{{ old('special_requests', $booking->special_requests) }}</textarea>
