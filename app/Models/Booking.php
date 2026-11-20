@@ -37,9 +37,8 @@ class Booking extends Model
     public static function paymentMethods(): array
     {
         return [
-            'pay_at_hotel' => 'Pay at hotel',
-            'gcash' => 'GCash',
-            'card' => 'Credit or debit card',
+            'ewallet' => 'E-wallet',
+            'cash' => 'Cash payment',
             'bank_transfer' => 'Bank transfer',
         ];
     }

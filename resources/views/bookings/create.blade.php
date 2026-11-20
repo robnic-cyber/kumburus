@@ -20,7 +20,7 @@
             <label>Payment method
                 <select name="payment_method" required>
                     @foreach(\App\Models\Booking::paymentMethods() as $value => $label)
-                        <option value="{{ $value }}" @selected(old('payment_method', 'pay_at_hotel') === $value)>{{ $label }}</option>
+                        <option value="{{ $value }}" @selected(old('payment_method', 'cash') === $value)>{{ $label }}</option>
                     @endforeach
                 </select>
                 <small>Your selected payment method is saved with the booking. No payment is charged yet.</small>

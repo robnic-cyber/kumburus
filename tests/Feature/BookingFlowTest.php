@@ -28,7 +28,7 @@ class BookingFlowTest extends TestCase
             'check_in' => $checkIn,
             'check_out' => $checkOut,
             'guests' => 2,
-            'payment_method' => 'gcash',
+            'payment_method' => 'ewallet',
         ]);
 
         $booking = Booking::first();
@@ -39,7 +39,7 @@ class BookingFlowTest extends TestCase
             'room_id' => $room->id,
             'status' => 'confirmed',
             'total_amount' => 600.00,
-            'payment_method' => 'gcash',
+            'payment_method' => 'ewallet',
         ]);
         Mail::assertSent(BookingConfirmedMail::class, fn (BookingConfirmedMail $mail) => $mail->booking->id === $booking->id);
 
@@ -70,7 +70,7 @@ class BookingFlowTest extends TestCase
             'check_in' => now()->addDays(7)->toDateString(),
             'check_out' => now()->addDays(9)->toDateString(),
             'guests' => 1,
-            'payment_method' => 'pay_at_hotel',
+            'payment_method' => 'cash',
         ]);
 
         $response->assertSessionHasErrors('check_in');

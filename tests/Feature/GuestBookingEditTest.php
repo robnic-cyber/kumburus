@@ -30,7 +30,7 @@ class GuestBookingEditTest extends TestCase
             'check_in' => now()->addDays(10)->toDateString(),
             'check_out' => now()->addDays(12)->toDateString(),
             'guests' => 2,
-            'payment_method' => 'card',
+            'payment_method' => 'ewallet',
             'special_requests' => 'Quiet room, please',
         ]);
 
@@ -39,7 +39,7 @@ class GuestBookingEditTest extends TestCase
             'id' => $booking->id,
             'room_id' => $updatedRoom->id,
             'total_amount' => 500,
-            'payment_method' => 'card',
+            'payment_method' => 'ewallet',
             'special_requests' => 'Quiet room, please',
         ]);
     }

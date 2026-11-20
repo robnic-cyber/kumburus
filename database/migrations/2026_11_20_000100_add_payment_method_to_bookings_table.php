@@ -10,7 +10,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('bookings', function (Blueprint $table): void {
-            $table->string('payment_method')->default('pay_at_hotel');
+            $table->string('payment_method')->default('cash');
         });
 
         if (DB::getDriverName() === 'pgsql') {
@@ -23,10 +23,10 @@ return new class extends Migration
         $this->dropSqliteTriggers();
 
         Schema::table('booking_details', function (Blueprint $table): void {
-            $table->string('payment_method')->default('pay_at_hotel');
+            $table->string('payment_method')->default('cash');
         });
 
-        DB::table('booking_details')->update(['payment_method' => 'pay_at_hotel']);
+        DB::table('booking_details')->update(['payment_method' => 'cash']);
         $this->createSqliteTriggers(true);
     }
 
